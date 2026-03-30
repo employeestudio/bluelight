@@ -23,6 +23,7 @@
         headerDateRange: "November 2023 – October 2024",
         headerAverage: "40%",
         highlightedIndex: 3,
+        columnWidthPx: 81,
         columns: [
           { facility: "Mid-State", date: "Oct. 2022", percentage: 62, n: 24, N: 39 },
           { facility: "Gouverneur", date: "Jun. 2024", percentage: 59, n: 20, N: 34 },
@@ -43,20 +44,18 @@
       const [showConfig, setShowConfig] = useState(true);
 
       const chartHeight = 500;
-      const chartWidth = 1200;
       const padding = { top: 80, right: 60, bottom: 120, left: 80 };
-      const innerWidth = chartWidth - padding.left - padding.right;
-      const innerHeight = chartHeight - padding.top - padding.bottom;
-      
-      const sortedColumns = [...config.columns].sort((a, b) => b.percentage - a.percentage);
-      
       const firstColumnOffset = 12;
-      const availableWidth = innerWidth - firstColumnOffset;
-      const columnWidth = availableWidth / sortedColumns.length;
+
+      const sortedColumns = [...config.columns].sort((a, b) => b.percentage - a.percentage);
+      const columnWidth = config.columnWidthPx;
+      const innerWidth = firstColumnOffset + columnWidth * sortedColumns.length;
+      const chartWidth = padding.left + padding.right + innerWidth;
+      const innerHeight = chartHeight - padding.top - padding.bottom;
       const avgPercentage = parseInt(config.headerAverage);
 
       return (
-        <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+        <div className="w-full mx-auto p-6 space-y-6">
           <style>{`
             svg { font-family: 'Work Sans', sans-serif; }
           `}</style>
@@ -244,6 +243,24 @@
               </div>
 
               <div>
+                <label className="block text-sm font-medium mb-1">
+                  Column Spacing — {config.columnWidthPx}px per column
+                </label>
+                <input
+                  type="range"
+                  min="55"
+                  max="150"
+                  value={config.columnWidthPx}
+                  onChange={(e) => setConfig({...config, columnWidthPx: parseInt(e.target.value)})}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>Tight</span>
+                  <span>Loose</span>
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium mb-2">Column Data (JSON)</label>
                 <textarea
                   value={JSON.stringify(config.columns, null, 2)}
@@ -273,8 +290,8 @@
             </div>
           )}
 
-          <div className="bg-white p-6 rounded-lg border">
-            <svg id="chart-svg" width={chartWidth} height={chartHeight} className="w-full" style={{ fontFamily: 'Work Sans, sans-serif' }}>
+          <div className="bg-white p-6 rounded-lg border overflow-x-auto">
+            <svg id="chart-svg" width={chartWidth} height={chartHeight} style={{ fontFamily: 'Work Sans, sans-serif' }}>
               <rect
                 x={padding.left}
                 y={12}
@@ -379,12 +396,14 @@
                 const highlightedFacility = config.columns[config.highlightedIndex]?.facility || '';
                 const isHighlighted = highlightedFacility === col.facility;
 
+                const bwr = 0.8;
+                const bOffset = columnWidth * ((1 - bwr) / 2);
                 return (
                   <g key={idx}>
                     <rect
-                      x={x + columnWidth * 0.1}
+                      x={x + bOffset}
                       y={y}
-                      width={columnWidth * 0.8}
+                      width={columnWidth * bwr}
                       height={barHeight}
                       fill={isHighlighted ? "#0077B0" : "#C5D7DB"}
                       stroke={isHighlighted ? "none" : "#46676F"}
@@ -392,9 +411,9 @@
                     />
 
                     <rect
-                      x={x + columnWidth * 0.1}
+                      x={x + bOffset}
                       y={y - 40}
-                      width={columnWidth * 0.8}
+                      width={columnWidth * bwr}
                       height={30}
                       fill="#ffffff"
                       fillOpacity="0.8"
