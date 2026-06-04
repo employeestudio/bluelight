@@ -24,6 +24,7 @@
         headerAverage: "40%",
         highlightedIndex: 3,
         columnWidthPx: 81,
+        avgLabelBelow: false,
         columns: [
           { facility: "Mid-State", date: "Oct. 2022", percentage: 62, n: 24, N: 39 },
           { facility: "Gouverneur", date: "Jun. 2024", percentage: 59, n: 20, N: 34 },
@@ -260,6 +261,18 @@
                 </div>
               </div>
 
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="avgLabelBelow"
+                  checked={config.avgLabelBelow || false}
+                  onChange={(e) => setConfig({...config, avgLabelBelow: e.target.checked})}
+                />
+                <label htmlFor="avgLabelBelow" className="text-sm font-medium cursor-pointer">
+                  Sample Average label: below line
+                </label>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2">Column Data (JSON)</label>
                 <textarea
@@ -338,56 +351,6 @@
                   </text>
                 </g>
               ))}
-
-              <line
-                x1={padding.left + firstColumnOffset}
-                y1={padding.top + innerHeight - (avgPercentage / 100) * innerHeight}
-                x2={padding.left + innerWidth}
-                y2={padding.top + innerHeight - (avgPercentage / 100) * innerHeight}
-                stroke={AVERAGE_COLOR}
-                strokeWidth="1"
-                strokeDasharray="5,5"
-              />
-
-              <text
-                x={padding.left + innerWidth - 40}
-                y={padding.top + innerHeight - (avgPercentage / 100) * innerHeight - 50}
-                textAnchor="middle"
-                fontSize="11"
-                fill={AVERAGE_COLOR}
-                fontWeight="600"
-              >
-                Sample
-              </text>
-              <text
-                x={padding.left + innerWidth - 40}
-                y={padding.top + innerHeight - (avgPercentage / 100) * innerHeight - 35}
-                textAnchor="middle"
-                fontSize="11"
-                fill={AVERAGE_COLOR}
-                fontWeight="600"
-              >
-                Average
-              </text>
-              <text
-                x={padding.left + innerWidth - 40}
-                y={padding.top + innerHeight - (avgPercentage / 100) * innerHeight - 20}
-                textAnchor="middle"
-                fontSize="11"
-                fill={AVERAGE_COLOR}
-                fontWeight="600"
-              >
-                {config.headerAverage}
-              </text>
-              <text
-                x={padding.left + innerWidth - 40}
-                y={padding.top + innerHeight - (avgPercentage / 100) * innerHeight - 5}
-                textAnchor="middle"
-                fontSize="16"
-                fill={AVERAGE_COLOR}
-              >
-                ↓
-              </text>
 
               {sortedColumns.map((col, idx) => {
                 const x = padding.left + firstColumnOffset + idx * columnWidth;
@@ -475,6 +438,40 @@
                   </g>
                 );
               })}
+
+              {(() => {
+                const lineY = padding.top + innerHeight - (avgPercentage / 100) * innerHeight;
+                const below = config.avgLabelBelow;
+                return (
+                  <g style={{ mixBlendMode: 'multiply' }}>
+                    <line
+                      x1={padding.left + firstColumnOffset}
+                      y1={lineY}
+                      x2={padding.left + innerWidth}
+                      y2={lineY}
+                      stroke={AVERAGE_COLOR}
+                      strokeWidth="1"
+                      strokeDasharray="5,5"
+                      strokeOpacity="0.36"
+                    />
+                    {below ? (
+                      <>
+                        <text x={padding.left + innerWidth - 40} y={lineY + 14} textAnchor="middle" fontSize="16" fill={AVERAGE_COLOR}>↑</text>
+                        <text x={padding.left + innerWidth - 40} y={lineY + 28} textAnchor="middle" fontSize="11" fill={AVERAGE_COLOR} fontWeight="600">Sample</text>
+                        <text x={padding.left + innerWidth - 40} y={lineY + 43} textAnchor="middle" fontSize="11" fill={AVERAGE_COLOR} fontWeight="600">Average</text>
+                        <text x={padding.left + innerWidth - 40} y={lineY + 58} textAnchor="middle" fontSize="11" fill={AVERAGE_COLOR} fontWeight="600">{config.headerAverage}</text>
+                      </>
+                    ) : (
+                      <>
+                        <text x={padding.left + innerWidth - 40} y={lineY - 50} textAnchor="middle" fontSize="11" fill={AVERAGE_COLOR} fontWeight="600">Sample</text>
+                        <text x={padding.left + innerWidth - 40} y={lineY - 35} textAnchor="middle" fontSize="11" fill={AVERAGE_COLOR} fontWeight="600">Average</text>
+                        <text x={padding.left + innerWidth - 40} y={lineY - 20} textAnchor="middle" fontSize="11" fill={AVERAGE_COLOR} fontWeight="600">{config.headerAverage}</text>
+                        <text x={padding.left + innerWidth - 40} y={lineY - 5} textAnchor="middle" fontSize="16" fill={AVERAGE_COLOR}>↓</text>
+                      </>
+                    )}
+                  </g>
+                );
+              })()}
 
               <line
                 x1={padding.left + firstColumnOffset}
